@@ -1,4 +1,5 @@
 const User = require('./user.schema');
+const moment = require('moment');
 
 async function createUser(user) {
   try {
@@ -36,4 +37,67 @@ async function getUserById(id) {
   }
 }
 
-module.exports = { createUser, getUsersByGroup, getUsers, getUserById };
+async function getUsersToday() {
+  try {
+    const data = await User.find({}, { __v: false });
+
+    const listFiltered = data.filter((user) =>
+      user.days.some(
+        (day) =>
+          moment(day).diff(moment(), 'days', true) < 0 &&
+          moment(day).diff(moment(), 'days', true) > -1
+      )
+    );
+
+    const result = listFiltered.map((user) => {
+      user.days = user.days.find(
+        (day) =>
+          moment(day).diff(moment(), 'days', true) < 0 &&
+          moment(day).diff(moment(), 'days', true) > -1
+      );
+
+      return user;
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+async function getUsersTomorrow() {
+  try {
+    const data = await User.find({}, { __v: false });
+
+    const listFiltered = data.filter((user) =>
+      user.days.some(
+        (day) =>
+          moment(day).diff(moment(), 'days', true) < 1 &&
+          moment(day).diff(moment(), 'days', true) > 0
+      )
+    );
+
+    const result = listFiltered.map((user) => {
+      user.days = user.days.find(
+        (day) =>
+          moment(day).diff(moment(), 'days', true) < 1 &&
+          moment(day).diff(moment(), 'days', true) > 0
+      );
+
+      return user;
+    });
+
+    return result;
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+module.exports = {
+  createUser,
+  getUsersByGroup,
+  getUsers,
+  getUserById,
+  getUsersToday,
+  getUsersTomorrow,
+};
